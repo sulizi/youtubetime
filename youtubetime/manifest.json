@@ -6,9 +6,11 @@
   "permissions": ["storage"],
   "content_scripts": [
     {
-      "matches": ["*://www.youtube.com/*"],
-      "js": ["content.js"],
-      "run_at": "document_idle"
+      "matches": [
+        "*://www.youtube.com/*"
+      ],
+      "js": ["dist/content.js"],
+      "run_at": "document_end"
     }
   ],
   "browser_specific_settings": {
@@ -18,7 +20,7 @@
   },
   "options_ui": {
     "page": "options.html",
-    "open_in_tab": true
+    "open_in_tab": false
   },
   "background": {
     "scripts": ["background.js"]

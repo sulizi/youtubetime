@@ -1,5 +1,7 @@
 // options.js
 
+import { getRedundantSetting, setRedundantSetting } from './redundantStorage.js';
+
 // Load and save color using storage.sync
 const colorInput = document.getElementById('color');
 const preview = document.getElementById('preview');

@@ -1,3 +1,5 @@
+import { getRedundantSetting, setRedundantSetting } from './redundantStorage.js';
+
 console.log('[YT Adjusted Time] Content script loaded');
 
 let ytAdjustedTimeCollapsed = getCollapsedState();
@@ -762,25 +764,12 @@ function rgbToHex(rgb) {
     );
 }
 
-function setup() {
-    const video = document.querySelector('video');
-    if (!video) return;
-
-    // Prevent duplicate listeners by removing any previous ones
-    video.removeEventListener('ratechange', throttledUpdateAdjustedTime);
-    video.removeEventListener('timeupdate', throttledUpdateAdjustedTime);
-
-    video.addEventListener('ratechange', throttledUpdateAdjustedTime);
-    video.addEventListener('timeupdate', throttledUpdateAdjustedTime);
-}
-
 let timeDisplayObserver = null;
 function observeTimeDisplay() {
     let timeContents = document.querySelector('.ytp-time-contents');
     if (timeContents) {
         if (timeDisplayObserver) timeDisplayObserver.disconnect();
         timeDisplayObserver = new MutationObserver(() => {
-            setup();
             throttledUpdateAdjustedTime();
         });
         timeDisplayObserver.observe(timeContents, { childList: true, subtree: true });
@@ -788,7 +777,6 @@ function observeTimeDisplay() {
 }
 
 const observer = new MutationObserver(() => {
-    setup();
     throttledUpdateAdjustedTime();
     observeTimeDisplay();
 });
@@ -902,11 +890,6 @@ function setupGlobalTimeSavedHooks() {
 function setup() {
     const video = document.querySelector('video');
     if (!video) return;
-    // Prevent duplicate listeners by removing any previous ones
-    video.removeEventListener('ratechange', throttledUpdateAdjustedTime);
-    video.removeEventListener('timeupdate', throttledUpdateAdjustedTime);
-    video.addEventListener('ratechange', throttledUpdateAdjustedTime);
-    video.addEventListener('timeupdate', throttledUpdateAdjustedTime);
     // Global time saved hooks
     setupGlobalTimeSavedHooks();
 }

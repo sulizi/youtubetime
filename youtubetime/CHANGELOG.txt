@@ -61,3 +61,7 @@ Version 2.0 (2024-05-XX)
 - Fixed ReferenceError: ytAdjustedTimeCollapsed is not defined (caused addon to not appear in 2.0)
 - Comprehensive bug review: no other ReferenceError or major issues found
 - Ready for release 
+
+2.2
+- Scripts are now bundled with Rollup into the 'dist' directory for compatibility and maintainability
+- Manifest updated to use 'dist/content.js' and 'dist/options.js' 
