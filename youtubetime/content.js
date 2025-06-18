@@ -1039,4 +1039,108 @@ function setup() {
     setupGlobalTimeSavedHooks();
 }
 
-console.log('[YT Adjusted Time] Script loaded - END'); 
+console.log('[YT Adjusted Time] Script loaded - END');
+
+// --- BEGIN: YouTube Watch Session Tracking for Statistics ---
+(function() {
+    let currentSession = null;
+    let lastVideoId = null;
+    let videoElement = null;
+    let sessionTimeout = null;
+
+    function getVideoId() {
+        const url = new URL(window.location.href);
+        return url.searchParams.get('v');
+    }
+
+    function getVideoTitle() {
+        const el = document.querySelector('h1.title, h1.ytd-watch-metadata');
+        return el ? el.textContent.trim() : '';
+    }
+
+    function getChannelName() {
+        const el = document.querySelector('ytd-channel-name a, ytd-channel-name yt-formatted-string');
+        return el ? el.textContent.trim() : '';
+    }
+
+    function saveSession(session) {
+        if (!session || !session.videoId || !session.startTime || !session.endTime) return;
+        chrome.storage.local.get({ ytWatchStats: [] }, function(data) {
+            const stats = data.ytWatchStats || [];
+            stats.push(session);
+            chrome.storage.local.set({ ytWatchStats: stats });
+        });
+    }
+
+    function startSession() {
+        const videoId = getVideoId();
+        if (!videoId) return;
+        if (currentSession && currentSession.videoId === videoId) return; // Already tracking
+        endSession();
+        currentSession = {
+            videoId,
+            title: getVideoTitle(),
+            channel: getChannelName(),
+            startTime: Date.now(),
+            endTime: null
+        };
+        lastVideoId = videoId;
+    }
+
+    function endSession() {
+        if (currentSession && !currentSession.endTime) {
+            currentSession.endTime = Date.now();
+            // Only save if session lasted at least 5 seconds
+            if (currentSession.endTime - currentSession.startTime > 5000) {
+                saveSession(currentSession);
+            }
+        }
+        currentSession = null;
+        lastVideoId = null;
+    }
+
+    function onVideoPlay() {
+        startSession();
+        if (sessionTimeout) clearTimeout(sessionTimeout);
+    }
+
+    function onVideoPause() {
+        if (sessionTimeout) clearTimeout(sessionTimeout);
+        // Wait a bit before ending session in case of short pauses
+        sessionTimeout = setTimeout(endSession, 15000);
+    }
+
+    function setupVideoTracking() {
+        if (videoElement) {
+            videoElement.removeEventListener('play', onVideoPlay);
+            videoElement.removeEventListener('pause', onVideoPause);
+        }
+        videoElement = document.querySelector('video');
+        if (videoElement) {
+            videoElement.addEventListener('play', onVideoPlay);
+            videoElement.addEventListener('pause', onVideoPause);
+            if (!videoElement.paused) {
+                onVideoPlay();
+            }
+        }
+    }
+
+    // Detect navigation (YouTube uses SPA navigation)
+    let lastUrl = location.href;
+    new MutationObserver(() => {
+        if (location.href !== lastUrl) {
+            lastUrl = location.href;
+            endSession();
+            setTimeout(setupVideoTracking, 1000);
+        }
+    }).observe(document, { subtree: true, childList: true });
+
+    // Initial setup
+    window.addEventListener('yt-navigate-finish', () => {
+        endSession();
+        setTimeout(setupVideoTracking, 1000);
+    });
+    setTimeout(setupVideoTracking, 2000);
+    window.addEventListener('beforeunload', endSession);
+})();
+// --- END: YouTube Watch Session Tracking for Statistics --- 

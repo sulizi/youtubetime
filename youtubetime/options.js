@@ -413,4 +413,100 @@ async function setBoxOpacity(val) {
   } else {
     localStorage.setItem('ytAdjustedTimeBoxOpacity', val.toString());
   }
-} 
+}
+
+// --- BEGIN: YouTube Watch Statistics Section ---
+function formatDuration(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  if (h > 0) return `${h}h ${m}m ${s}s`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
+function getDayKey(ts) {
+  const d = new Date(ts);
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+}
+
+function getHour(ts) {
+  return new Date(ts).getHours();
+}
+
+function aggregateStats(sessions) {
+  const now = Date.now();
+  const oneDay = 24 * 3600 * 1000;
+  const oneWeek = 7 * oneDay;
+  const oneMonth = 30 * oneDay;
+  let total = 0, totalDay = 0, totalWeek = 0, totalMonth = 0;
+  let sessionLengths = [];
+  let channelMap = {}, videoMap = {}, hourMap = {};
+  const todayKey = getDayKey(now);
+  sessions.forEach(s => {
+    const dur = Math.floor((s.endTime - s.startTime) / 1000);
+    if (dur < 5) return;
+    total += dur;
+    sessionLengths.push(dur);
+    if (now - s.startTime < oneDay) totalDay += dur;
+    if (now - s.startTime < oneWeek) totalWeek += dur;
+    if (now - s.startTime < oneMonth) totalMonth += dur;
+    // Channel
+    if (s.channel) channelMap[s.channel] = (channelMap[s.channel] || 0) + dur;
+    // Video
+    if (s.title) videoMap[s.title] = (videoMap[s.title] || 0) + dur;
+    // Hour
+    const hour = getHour(s.startTime);
+    hourMap[hour] = (hourMap[hour] || 0) + dur;
+  });
+  // Most-watched
+  const topChannels = Object.entries(channelMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const topVideos = Object.entries(videoMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  // Peak hour
+  let peakHour = null, peakVal = 0;
+  for (const [h, v] of Object.entries(hourMap)) {
+    if (v > peakVal) { peakVal = v; peakHour = h; }
+  }
+  // Average session
+  const avgSession = sessionLengths.length ? Math.round(sessionLengths.reduce((a,b)=>a+b,0)/sessionLengths.length) : 0;
+  return {
+    total, totalDay, totalWeek, totalMonth,
+    topChannels, topVideos,
+    avgSession, peakHour
+  };
+}
+
+function renderStats(stats) {
+  const c = document.getElementById('yt-stats-container');
+  c.innerHTML = `
+    <table style="width:100%;max-width:500px">
+      <tr><td><b>Total Watch Time</b></td><td>${formatDuration(stats.total)}</td></tr>
+      <tr><td>Today</td><td>${formatDuration(stats.totalDay)}</td></tr>
+      <tr><td>This Week</td><td>${formatDuration(stats.totalWeek)}</td></tr>
+      <tr><td>This Month</td><td>${formatDuration(stats.totalMonth)}</td></tr>
+      <tr><td><b>Average Session</b></td><td>${formatDuration(stats.avgSession)}</td></tr>
+      <tr><td><b>Peak Usage Hour</b></td><td>${stats.peakHour !== null ? stats.peakHour + ':00' : '-'}</td></tr>
+      <tr><td><b>Top Channels</b></td><td>${stats.topChannels.map(([n,t])=>`${n} (${formatDuration(t)})`).join('<br>') || '-'}</td></tr>
+      <tr><td><b>Top Videos</b></td><td>${stats.topVideos.map(([n,t])=>`${n} (${formatDuration(t)})`).join('<br>') || '-'}</td></tr>
+    </table>
+  `;
+}
+
+function loadStats() {
+  chrome.storage.local.get({ ytWatchStats: [] }, function(data) {
+    const stats = aggregateStats(data.ytWatchStats || []);
+    renderStats(stats);
+  });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('yt-stats-container')) {
+    loadStats();
+    document.getElementById('reset-stats-btn').addEventListener('click', function() {
+      if (confirm('Are you sure you want to reset all watch statistics?')) {
+        chrome.storage.local.set({ ytWatchStats: [] }, loadStats);
+      }
+    });
+  }
+});
+// --- END: YouTube Watch Statistics Section --- 
