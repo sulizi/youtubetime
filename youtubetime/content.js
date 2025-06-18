@@ -1,7 +1,5 @@
 console.log('[YT Adjusted Time] Content script loaded');
 
-import { getRedundantSetting, setRedundantSetting } from './redundantStorage.js';
-
 let lastUpdate = 0;
 function throttledUpdateAdjustedTime() {
     const now = Date.now();

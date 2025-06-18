@@ -1,13 +1,9 @@
 // options.js
-import { setupUI, loadStats } from './ui.js';
-import { renderAnalyticsCharts } from './analytics.js';
 
 // Load and save color using storage.sync
 const colorInput = document.getElementById('color');
 const preview = document.getElementById('preview');
 const colorEnabledInput = document.getElementById('color-enabled');
-
-import { getRedundantSetting, setRedundantSetting } from './redundantStorage.js';
 
 // --- THEME PRESETS ---
 const YT_ADJUSTED_TIME_THEMES = [
