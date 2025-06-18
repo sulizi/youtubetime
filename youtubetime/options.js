@@ -4,6 +4,8 @@ const colorInput = document.getElementById('color');
 const preview = document.getElementById('preview');
 const colorEnabledInput = document.getElementById('color-enabled');
 
+import { getRedundantSetting, setRedundantSetting } from './redundantStorage.js';
+
 // --- THEME PRESETS ---
 const YT_ADJUSTED_TIME_THEMES = [
   { name: 'Classic', bg: '#ffa500', text: '#ffffff' },
@@ -19,157 +21,47 @@ const YT_ADJUSTED_TIME_THEMES = [
 ];
 
 async function getBoxColor() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTimeBoxColor');
-    const color = result.ytAdjustedTimeBoxColor || '#ffa500';
-    console.log('[YT Options] getBoxColor returns:', color);
-    return color;
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTimeBoxColor', result => {
-        const color = result.ytAdjustedTimeBoxColor || '#ffa500';
-        console.log('[YT Options] getBoxColor returns:', color);
-        resolve(color);
-      });
-    });
-  } else {
-    const color = localStorage.getItem('ytAdjustedTimeBoxColor') || '#ffa500';
-    console.log('[YT Options] getBoxColor returns:', color);
-    return color;
-  }
+  return await getRedundantSetting('ytAdjustedTimeBoxColor', '#ffa500');
 }
 async function setBoxColor(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeBoxColor: val });
-    console.log('[YT Options] setBoxColor (browser):', val);
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeBoxColor: val });
-    console.log('[YT Options] setBoxColor (chrome):', val);
-  } else {
-    localStorage.setItem('ytAdjustedTimeBoxColor', val);
-    console.log('[YT Options] setBoxColor (localStorage):', val);
-  }
+  await setRedundantSetting('ytAdjustedTimeBoxColor', val);
 }
 
 async function getBoxColorEnabled() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTimeBoxColorEnabled');
-    return result.ytAdjustedTimeBoxColorEnabled !== undefined ? result.ytAdjustedTimeBoxColorEnabled : true;
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTimeBoxColorEnabled', result => {
-        resolve(result.ytAdjustedTimeBoxColorEnabled !== undefined ? result.ytAdjustedTimeBoxColorEnabled : true);
-      });
-    });
-  } else {
-    const val = localStorage.getItem('ytAdjustedTimeBoxColorEnabled');
-    return val === null ? true : val === 'true';
-  }
+  return await getRedundantSetting('ytAdjustedTimeBoxColorEnabled', true);
 }
 async function setBoxColorEnabled(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeBoxColorEnabled: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeBoxColorEnabled: val });
-  } else {
-    localStorage.setItem('ytAdjustedTimeBoxColorEnabled', val ? 'true' : 'false');
-  }
+  await setRedundantSetting('ytAdjustedTimeBoxColorEnabled', val);
 }
 
 async function getTheme() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTimeTheme');
-    return result.ytAdjustedTimeTheme || 'Classic';
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTimeTheme', result => {
-        resolve(result.ytAdjustedTimeTheme || 'Classic');
-      });
-    });
-  } else {
-    return localStorage.getItem('ytAdjustedTimeTheme') || 'Classic';
-  }
+  return await getRedundantSetting('ytAdjustedTimeTheme', 'Classic');
 }
 async function setTheme(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeTheme: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeTheme: val });
-  } else {
-    localStorage.setItem('ytAdjustedTimeTheme', val);
-  }
+  await setRedundantSetting('ytAdjustedTimeTheme', val);
 }
+
 async function getTextColor() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTimeTextColor');
-    return result.ytAdjustedTimeTextColor || '#fff';
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTimeTextColor', result => {
-        resolve(result.ytAdjustedTimeTextColor || '#fff');
-      });
-    });
-  } else {
-    return localStorage.getItem('ytAdjustedTimeTextColor') || '#fff';
-  }
+  return await getRedundantSetting('ytAdjustedTimeTextColor', '#fff');
 }
 async function setTextColor(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeTextColor: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeTextColor: val });
-  } else {
-    localStorage.setItem('ytAdjustedTimeTextColor', val);
-  }
+  await setRedundantSetting('ytAdjustedTimeTextColor', val);
 }
+
 async function getShowEndTime() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTimeShowEndTime');
-    return result.ytAdjustedTimeShowEndTime !== undefined ? result.ytAdjustedTimeShowEndTime : true;
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTimeShowEndTime', result => {
-        resolve(result.ytAdjustedTimeShowEndTime !== undefined ? result.ytAdjustedTimeShowEndTime : true);
-      });
-    });
-  } else {
-    const val = localStorage.getItem('ytAdjustedTimeShowEndTime');
-    return val === null ? true : val === 'true';
-  }
+  return await getRedundantSetting('ytAdjustedTimeShowEndTime', true);
 }
 async function setShowEndTime(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeShowEndTime: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeShowEndTime: val });
-  } else {
-    localStorage.setItem('ytAdjustedTimeShowEndTime', val ? 'true' : 'false');
-  }
+  await setRedundantSetting('ytAdjustedTimeShowEndTime', val);
 }
+
 async function get24HourTime() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTime24Hour');
-    return result.ytAdjustedTime24Hour !== undefined ? result.ytAdjustedTime24Hour : false;
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTime24Hour', result => {
-        resolve(result.ytAdjustedTime24Hour !== undefined ? result.ytAdjustedTime24Hour : false);
-      });
-    });
-  } else {
-    const stored = localStorage.getItem('ytAdjustedTime24Hour');
-    return stored === null ? false : stored === 'true';
-  }
+  return await getRedundantSetting('ytAdjustedTime24Hour', false);
 }
 async function set24HourTime(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTime24Hour: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTime24Hour: val });
-  } else {
-    localStorage.setItem('ytAdjustedTime24Hour', val ? 'true' : 'false');
-  }
+  await setRedundantSetting('ytAdjustedTime24Hour', val);
 }
+
 function formatTime(seconds) {
   seconds = Math.max(0, Math.floor(seconds));
   const m = Math.floor(seconds / 60);
@@ -424,28 +316,10 @@ document.getElementById('back-to-youtube').addEventListener('click', function() 
 
 // Add get/set for opacity
 async function getBoxOpacity() {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    const result = await browser.storage.sync.get('ytAdjustedTimeBoxOpacity');
-    return result.ytAdjustedTimeBoxOpacity !== undefined ? result.ytAdjustedTimeBoxOpacity : 100;
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
-      chrome.storage.sync.get('ytAdjustedTimeBoxOpacity', result => {
-        resolve(result.ytAdjustedTimeBoxOpacity !== undefined ? result.ytAdjustedTimeBoxOpacity : 100);
-      });
-    });
-  } else {
-    const val = localStorage.getItem('ytAdjustedTimeBoxOpacity');
-    return val === null ? 100 : parseInt(val, 10);
-  }
+  return await getRedundantSetting('ytAdjustedTimeBoxOpacity', 100);
 }
 async function setBoxOpacity(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeBoxOpacity: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeBoxOpacity: val });
-  } else {
-    localStorage.setItem('ytAdjustedTimeBoxOpacity', val.toString());
-  }
+  await setRedundantSetting('ytAdjustedTimeBoxOpacity', val);
 }
 
 // --- WATCH STATS: REDUNDANT STORAGE ---
