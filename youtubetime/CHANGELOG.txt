@@ -56,3 +56,8 @@ Version 2.0 (2024-05-XX)
 - DRY refactor for event listeners and UI logic
 - General code cleanup and maintainability improvements
 - Ready for future analytics/chart integration 
+
+2.1
+- Fixed ReferenceError: ytAdjustedTimeCollapsed is not defined (caused addon to not appear in 2.0)
+- Comprehensive bug review: no other ReferenceError or major issues found
+- Ready for release 

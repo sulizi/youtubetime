@@ -1,5 +1,6 @@
 console.log('[YT Adjusted Time] Content script loaded');
 
+let ytAdjustedTimeCollapsed = getCollapsedState();
 let lastUpdate = 0;
 function throttledUpdateAdjustedTime() {
     const now = Date.now();
