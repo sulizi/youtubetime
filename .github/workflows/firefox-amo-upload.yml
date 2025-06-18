@@ -37,7 +37,7 @@ jobs:
 
       - name: Create AMO metadata file
         run: |
-          echo '{"version": {"release_notes": "'$(echo "${{ steps.get_release_notes.outputs.release_notes }}" | sed 's/"/\\"/g')'"}}' > amo_metadata.json
+          echo '{"version": {"release_notes": {"en-US": "'$(echo "${{ steps.get_release_notes.outputs.release_notes }}" | sed 's/"/\\"/g')'"}}}' > amo_metadata.json
 
       - name: web-ext sign (upload to AMO)
         id: web-ext-sign
