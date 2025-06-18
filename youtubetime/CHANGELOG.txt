@@ -44,4 +44,15 @@ Version 1.3 (2024-05-14)
 - Stats are now highly persistent: global time saved and watch stats are redundantly stored in chrome.storage.sync, chrome.storage.local, and localStorage, with automatic recovery if any are missing.
 - Added export/import feature for all stats (global and watch) via the options page for easy backup and restore.
 - Improved reset buttons to use new persistent storage logic.
-- All user settings now use robust, redundant storage (sync, local, localStorage) with automatic recovery, using a new utility for DRY code. 
+- All user settings now use robust, redundant storage (sync, local, localStorage) with automatic recovery, using a new utility for DRY code.
+
+Version 2.0 (2024-05-XX)
+-----------------------
+- Major codebase modularization: split options logic into storage.js, stats.js, ui.js, analytics.js
+- Added JSDoc comments and improved documentation throughout
+- Improved accessibility: proper labels, ARIA attributes, keyboard navigation
+- Moved inline styles to options.css for maintainable and consistent styling
+- Added robust error handling for async operations and user actions
+- DRY refactor for event listeners and UI logic
+- General code cleanup and maintainability improvements
+- Ready for future analytics/chart integration 

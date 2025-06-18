@@ -28,26 +28,26 @@
   <h1>YouTube Adjusted Time – Options</h1>
   <div class="section">
     <label for="theme">Theme:</label>
-    <select id="theme"></select>
+    <select id="theme" aria-label="Theme preset"></select>
     <br><br>
     <label for="color">Box Color:</label>
-    <input type="color" id="color" name="color">
+    <input type="color" id="color" name="color" aria-label="Box Color">
     <label for="color-enabled" style="margin-left:1em;">
-      <input type="checkbox" id="color-enabled" name="color-enabled" checked>
+      <input type="checkbox" id="color-enabled" name="color-enabled" checked aria-label="Enable colored background">
       Colored background
     </label>
     <label for="text-color" style="margin-left:1em;">Text Color:</label>
-    <input type="color" id="text-color" name="text-color">
+    <input type="color" id="text-color" name="text-color" aria-label="Text Color">
     <br><br>
     <label for="box-opacity">Box Opacity:</label>
-    <input type="range" id="box-opacity" name="box-opacity" min="0" max="100" value="100" style="vertical-align:middle;">
+    <input type="range" id="box-opacity" name="box-opacity" min="0" max="100" value="100" style="vertical-align:middle;" aria-valuemin="0" aria-valuemax="100" aria-label="Box Opacity">
     <span id="box-opacity-value">100%</span>
     <label for="show-endtime">Show End Time:</label>
-    <input type="checkbox" id="show-endtime" checked>
+    <input type="checkbox" id="show-endtime" aria-label="Show End Time" checked>
     <label for="24hour" style="margin-left:1em;">24-hour time:</label>
-    <input type="checkbox" id="24hour">
-    <span id="preview" class="preview-box">9:02 | 5:10 PM</span>
-    <button id="apply-btn" style="margin-left: 1em;">Apply</button>
+    <input type="checkbox" id="24hour" aria-label="24-hour time">
+    <span id="preview" class="preview-box" tabindex="0" aria-label="Preview of adjusted time">9:02 | 5:10 PM</span>
+    <button id="apply-btn" style="margin-left: 1em;" aria-label="Apply settings">Apply</button>
     <span id="applied-msg" style="margin-left: 1em; color: #4ea1ff; display: none;">Applied!</span>
   </div>
   <div class="section" id="stats-section">
@@ -55,10 +55,22 @@
     <div id="yt-stats-container">
       <em>Loading statistics...</em>
     </div>
-    <button id="reset-stats-btn" style="margin-top:1em;">Reset Stats</button>
+    <button id="reset-stats-btn" style="margin-top:1em;" aria-label="Reset statistics">Reset Stats</button>
   </div>
   <div class="section">
-    <button id="back-to-youtube" class="link">Back to YouTube</button>
+    <strong>Data Usage:</strong>
+    <p>This extension stores your settings and watch statistics locally in your browser. No data is sent to any server. You can export, import, or clear your data at any time.</p>
+    <a href="privacy.html" target="_blank">Privacy Policy</a>
+  </div>
+  <div class="section">
+    <button id="back-to-youtube" class="link" aria-label="Back to YouTube">Back to YouTube</button>
+  </div>
+  <button id="clear-all-data-btn" style="margin-top:1em;" aria-label="Clear all extension data">Clear All Data</button>
+  <div class="section">
+    <h2>Analytics & Charts (Coming Soon)</h2>
+    <div id="yt-analytics-container">
+      <em>Charts and analytics coming soon...</em>
+    </div>
   </div>
   <script src="options.js"></script>
 </body>

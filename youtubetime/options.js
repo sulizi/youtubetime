@@ -1,4 +1,7 @@
 // options.js
+import { setupUI, loadStats } from './ui.js';
+import { renderAnalyticsCharts } from './analytics.js';
+
 // Load and save color using storage.sync
 const colorInput = document.getElementById('color');
 const preview = document.getElementById('preview');
@@ -282,6 +285,13 @@ function formatGlobalTimeSaved(seconds) {
 }
 // Add display to options page
 document.addEventListener('DOMContentLoaded', async function() {
+  await setupUI();
+  if (document.getElementById('yt-stats-container')) {
+    await loadStats();
+  }
+  if (document.getElementById('yt-analytics-container')) {
+    renderAnalyticsCharts();
+  }
   let statDiv = document.createElement('div');
   statDiv.className = 'section';
   // Instead of innerHTML, use DOM methods
@@ -520,4 +530,73 @@ document.addEventListener('DOMContentLoaded', function() {
     loadStats();
   }
 });
-// --- END: YouTube Watch Statistics Section --- 
+// --- END: YouTube Watch Statistics Section ---
+
+document.getElementById('clear-all-data-btn').addEventListener('click', async function() {
+  if (confirm('Are you sure you want to clear all extension data? This cannot be undone.')) {
+    await setGlobalTimeSaved(0);
+    await setWatchStats([]);
+    // Reset all settings to defaults
+    await setTheme('Classic');
+    await setBoxColor('#ffa500');
+    await setBoxColorEnabled(true);
+    await setTextColor('#fff');
+    await setShowEndTime(true);
+    await set24HourTime(false);
+    await setBoxOpacity(100);
+    localStorage.clear();
+    alert('All extension data cleared.');
+    location.reload();
+  }
+});
+
+// Debounce utility
+function debounce(fn, delay) {
+  let timer = null;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
+// Debounced setBoxOpacity
+const debouncedSetBoxOpacity = debounce(async function(val) {
+  await setBoxOpacity(val);
+}, 200);
+
+// Update event listeners for box opacity
+const boxOpacityInput = document.getElementById('box-opacity');
+boxOpacityInput.addEventListener('input', function() {
+  debouncedSetBoxOpacity(this.value);
+  updatePreview();
+});
+boxOpacityInput.addEventListener('change', function() {
+  debouncedSetBoxOpacity(this.value);
+  updatePreview();
+});
+
+// --- CHARTS & ANALYTICS PLACEHOLDER ---
+function renderAnalyticsCharts() {
+  // Placeholder for future chart/analytics integration
+  // Example: Use Chart.js or similar library to render watch time trends
+  // This function will be called when analytics UI is shown
+  const container = document.getElementById('yt-analytics-container');
+  if (!container) return;
+  container.innerHTML = '<em>Charts and analytics coming soon...</em>';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (document.getElementById('yt-analytics-container')) {
+    renderAnalyticsCharts();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', async function() {
+  await setupUI();
+  if (document.getElementById('yt-stats-container')) {
+    await loadStats();
+  }
+  if (document.getElementById('yt-analytics-container')) {
+    renderAnalyticsCharts();
+  }
+}); 
