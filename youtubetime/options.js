@@ -305,26 +305,59 @@ document.getElementById('apply-btn').addEventListener('click', async function(e)
   }, 1200);
 });
 
+// --- GLOBAL TIME SAVED: REDUNDANT STORAGE ---
 async function getGlobalTimeSaved() {
+  // Try sync, then local, then localStorage
+  let syncVal, localVal, lsVal;
+  // SYNC
   if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
     const result = await browser.storage.sync.get('ytAdjustedTimeGlobalSaved');
-    return result.ytAdjustedTimeGlobalSaved || 0;
+    syncVal = result.ytAdjustedTimeGlobalSaved;
   } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    return new Promise(resolve => {
+    syncVal = await new Promise(resolve => {
       chrome.storage.sync.get('ytAdjustedTimeGlobalSaved', result => {
-        resolve(result.ytAdjustedTimeGlobalSaved || 0);
+        resolve(result.ytAdjustedTimeGlobalSaved);
       });
     });
-  } else {
-    return parseFloat(localStorage.getItem('ytAdjustedTimeGlobalSaved') || '0');
   }
+  // LOCAL
+  if (typeof browser !== 'undefined' && browser.storage && browser.storage.local) {
+    const result = await browser.storage.local.get('ytAdjustedTimeGlobalSaved');
+    localVal = result.ytAdjustedTimeGlobalSaved;
+  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    localVal = await new Promise(resolve => {
+      chrome.storage.local.get('ytAdjustedTimeGlobalSaved', result => {
+        resolve(result.ytAdjustedTimeGlobalSaved);
+      });
+    });
+  }
+  // LOCALSTORAGE
+  lsVal = parseFloat(localStorage.getItem('ytAdjustedTimeGlobalSaved') || '0');
+  // Pick the max (most up-to-date)
+  let best = Math.max(syncVal || 0, localVal || 0, lsVal || 0);
+  // Restore if missing
+  if (syncVal !== best) setGlobalTimeSaved(best, 'sync');
+  if (localVal !== best) setGlobalTimeSaved(best, 'local');
+  if (lsVal !== best) setGlobalTimeSaved(best, 'localStorage');
+  return best;
 }
-async function setGlobalTimeSaved(val) {
-  if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
-    await browser.storage.sync.set({ ytAdjustedTimeGlobalSaved: val });
-  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
-    chrome.storage.sync.set({ ytAdjustedTimeGlobalSaved: val });
-  } else {
+async function setGlobalTimeSaved(val, only) {
+  // only: 'sync', 'local', 'localStorage' or undefined (all)
+  if (!only || only === 'sync') {
+    if (typeof browser !== 'undefined' && browser.storage && browser.storage.sync) {
+      await browser.storage.sync.set({ ytAdjustedTimeGlobalSaved: val });
+    } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set({ ytAdjustedTimeGlobalSaved: val });
+    }
+  }
+  if (!only || only === 'local') {
+    if (typeof browser !== 'undefined' && browser.storage && browser.storage.local) {
+      await browser.storage.local.set({ ytAdjustedTimeGlobalSaved: val });
+    } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ ytAdjustedTimeGlobalSaved: val });
+    }
+  }
+  if (!only || only === 'localStorage') {
     localStorage.setItem('ytAdjustedTimeGlobalSaved', val.toString());
   }
 }
@@ -415,6 +448,122 @@ async function setBoxOpacity(val) {
   }
 }
 
+// --- WATCH STATS: REDUNDANT STORAGE ---
+async function getWatchStats() {
+  let localVal, lsVal;
+  // LOCAL
+  if (typeof browser !== 'undefined' && browser.storage && browser.storage.local) {
+    const result = await browser.storage.local.get('ytWatchStats');
+    localVal = result.ytWatchStats;
+  } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+    localVal = await new Promise(resolve => {
+      chrome.storage.local.get('ytWatchStats', result => {
+        resolve(result.ytWatchStats);
+      });
+    });
+  }
+  // LOCALSTORAGE
+  try {
+    lsVal = JSON.parse(localStorage.getItem('ytWatchStats') || '[]');
+  } catch (e) {
+    lsVal = [];
+  }
+  // Pick the longer (most up-to-date)
+  let best = (localVal && localVal.length > (lsVal ? lsVal.length : 0)) ? localVal : lsVal;
+  // Restore if missing
+  if (JSON.stringify(localVal) !== JSON.stringify(best)) setWatchStats(best, 'local');
+  if (JSON.stringify(lsVal) !== JSON.stringify(best)) setWatchStats(best, 'localStorage');
+  return best || [];
+}
+async function setWatchStats(val, only) {
+  // only: 'local', 'localStorage' or undefined (both)
+  if (!only || only === 'local') {
+    if (typeof browser !== 'undefined' && browser.storage && browser.storage.local) {
+      await browser.storage.local.set({ ytWatchStats: val });
+    } else if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ ytWatchStats: val });
+    }
+  }
+  if (!only || only === 'localStorage') {
+    localStorage.setItem('ytWatchStats', JSON.stringify(val));
+  }
+}
+
+// --- EXPORT/IMPORT UI ---
+function addExportImportUI() {
+  // Global time saved
+  const statDiv = document.querySelector('.section');
+  if (statDiv) {
+    const exportBtn = document.createElement('button');
+    exportBtn.textContent = 'Export Stats';
+    exportBtn.style.marginLeft = '1em';
+    exportBtn.onclick = async function() {
+      const global = await getGlobalTimeSaved();
+      const watch = await getWatchStats();
+      const blob = new Blob([JSON.stringify({ global, watch }, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'yt-stats-backup.json';
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    };
+    statDiv.appendChild(exportBtn);
+    // Import
+    const importBtn = document.createElement('button');
+    importBtn.textContent = 'Import Stats';
+    importBtn.style.marginLeft = '1em';
+    importBtn.onclick = function() {
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = '.json,application/json';
+      input.onchange = async function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const text = await file.text();
+        try {
+          const data = JSON.parse(text);
+          if (typeof data.global === 'number') await setGlobalTimeSaved(data.global);
+          if (Array.isArray(data.watch)) await setWatchStats(data.watch);
+          alert('Stats imported!');
+          location.reload();
+        } catch (e) {
+          alert('Invalid stats file.');
+        }
+      };
+      input.click();
+    };
+    statDiv.appendChild(importBtn);
+  }
+}
+document.addEventListener('DOMContentLoaded', addExportImportUI);
+
+// --- PATCH: RESET BUTTONS ---
+document.addEventListener('DOMContentLoaded', function() {
+  // ... existing code ...
+  document.getElementById('yt-reset-global-time-saved').onclick = async function() {
+    await setGlobalTimeSaved(0);
+    document.getElementById('yt-global-time-saved').textContent = formatGlobalTimeSaved(0);
+  };
+  // Patch for watch stats reset
+  if (document.getElementById('reset-stats-btn')) {
+    document.getElementById('reset-stats-btn').addEventListener('click', async function() {
+      if (confirm('Are you sure you want to reset all watch statistics?')) {
+        await setWatchStats([]);
+        loadStats();
+      }
+    });
+  }
+});
+
+// --- PATCH: LOAD STATS USES REDUNDANT GET ---
+function loadStats() {
+  getWatchStats().then(statsArr => {
+    const stats = aggregateStats(statsArr || []);
+    renderStats(stats);
+  });
+}
+
 // --- BEGIN: YouTube Watch Statistics Section ---
 function formatDuration(seconds) {
   const h = Math.floor(seconds / 3600);
@@ -492,21 +641,9 @@ function renderStats(stats) {
   `;
 }
 
-function loadStats() {
-  chrome.storage.local.get({ ytWatchStats: [] }, function(data) {
-    const stats = aggregateStats(data.ytWatchStats || []);
-    renderStats(stats);
-  });
-}
-
 document.addEventListener('DOMContentLoaded', function() {
   if (document.getElementById('yt-stats-container')) {
     loadStats();
-    document.getElementById('reset-stats-btn').addEventListener('click', function() {
-      if (confirm('Are you sure you want to reset all watch statistics?')) {
-        chrome.storage.local.set({ ytWatchStats: [] }, loadStats);
-      }
-    });
   }
 });
 // --- END: YouTube Watch Statistics Section --- 

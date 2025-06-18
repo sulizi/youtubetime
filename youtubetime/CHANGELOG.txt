@@ -1,6 +1,18 @@
 YouTube Adjusted Time Remaining - Changelog
 ==========================================
 
+Version 1.8 (2024-05-15)
+------------------------
+- Added a YouTube Watch Statistics dashboard to the options page:
+  - Tracks and displays total watch time (all time, today, this week, this month)
+  - Shows most-watched channels and videos
+  - Displays average session length and peak usage hour
+  - Includes a Reset Stats button 
+
+Version 1.7 (2024-05-15)
+------------------------
+- All-time saved is now displayed as years, months, days, hours, and minutes in both the popup and options page for improved readability.
+
 Version 1.6 (2024-05-14)
 ------------------------
 - Options page now includes all popup settings: theme selector, text color, show/hide end time, 24-hour time toggle, and a live preview matching YouTube's style.
@@ -28,14 +40,7 @@ Version 1.3 (2024-05-14)
   - Added a close (×) button to the popup (in addition to click-outside-to-close).
 - Various UI and UX improvements.
 
-Version 1.7 (2024-05-15)
-------------------------
-- All-time saved is now displayed as years, months, days, hours, and minutes in both the popup and options page for improved readability.
-
-Version 1.8 (2024-05-15)
-------------------------
-- Added a YouTube Watch Statistics dashboard to the options page:
-  - Tracks and displays total watch time (all time, today, this week, this month)
-  - Shows most-watched channels and videos
-  - Displays average session length and peak usage hour
-  - Includes a Reset Stats button 
+## [Unreleased]
+- Stats are now highly persistent: global time saved and watch stats are redundantly stored in chrome.storage.sync, chrome.storage.local, and localStorage, with automatic recovery if any are missing.
+- Added export/import feature for all stats (global and watch) via the options page for easy backup and restore.
+- Improved reset buttons to use new persistent storage logic. 
