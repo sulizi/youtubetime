@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'  # Only run on version tags like v1.7
+    branches:
+      - main  # Also run on pushes to main
 
 jobs:
   sign-and-upload:
