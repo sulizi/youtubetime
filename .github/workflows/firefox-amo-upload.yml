@@ -27,7 +27,7 @@ jobs:
             TAG_NAME=${GITHUB_REF#refs/tags/}
             RELEASE_NOTES=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
               "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/tags/$TAG_NAME" | jq -r .body)
-            if [ "$RELEASE_NOTES" = "null" ]; then RELEASE_NOTES=""; fi
+            if [ "$RELEASE_NOTES" = "null" ] || [ -z "$RELEASE_NOTES" ]; then RELEASE_NOTES="Automated release for $TAG_NAME. See changelog or commit history for details."; fi
           fi
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
           echo "$RELEASE_NOTES" >> $GITHUB_OUTPUT
